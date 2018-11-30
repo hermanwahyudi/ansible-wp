@@ -1,0 +1,12 @@
+---
+# tasks file for mysql
+
+- name: Install required software
+  yum: name={{ item }} state=present
+  sudo: yes
+  with_items:
+    - MySQL-python.x86_64
+    - akonadi-mysql.x86_64
+  tags:
+    - install-mysql-python
+

@@ -1,0 +1,72 @@
+---
+# tasks file for nginx
+
+- name: Make sure epel-release is installed
+  yum:
+    name: epel-release
+    state: present
+  become: yes
+  tags:
+    - install epel-release
+    - setup
+
+- name: Add nginx repository
+  copy:
+    src: files/nginx.repo
+    dest: /etc/yum.repos.d/nginx.repo
+  become: yes
+  tags:
+    - copy-nginx-repo
+    - setup
+
+- name: Install nginx
+  yum:
+    name: nginx
+    state: present
+  become: yes
+  tags:
+    - install-nginx
+    - setup
+
+- name: Copy nginx confif
+  copy:
+    src: files/nginx.conf
+    dest: /etc/nginx/nginx.conf
+  become: yes
+  tags:
+    - copy-nginx-conf
+    - setup
+
+- name: Remove nginx default config
+  file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+  become: yes
+  tags:
+    - delete-default-config
+    - setup
+
+- name: Copy specific config
+  template:
+    src: "templates/nginx-{{ project_name }}.conf.j2"
+    dest: "/etc/nginx/conf.d/{{ project_name }}.conf"
+  become: yes
+  when:
+    - project_name != "default"
+  tags:
+    - copy-domain-config
+    - setup
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: true
+  become: yes
+  tags:
+    - enable-nginx
+    - setup
+
+- name: Done
+  debug: 
+    msg: "Done! The blog can be accessed at {{ ansible_nodename }} !"

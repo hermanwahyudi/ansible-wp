@@ -1,0 +1,84 @@
+---
+# tasks file for php
+
+- name: installing epel-release
+  yum:
+    name: epel-release
+    state: latest
+  tags:
+    - install-epel
+
+- name: install webtatic repo
+  yum:
+    name: https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+    state: latest
+  tags:
+    - install-webtatic
+
+# php_version php56w, php7, etc
+
+- name: install common php package
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+  - "{{ php_version }}"
+  - "{{ php_version }}-fpm"
+  - "{{ php_version }}-common"
+  - "{{ php_version }}-cli"
+  - "{{ php_version }}-devel"
+  #- "{{ php_version }}-pecl"
+  - "{{ php_version }}-pdo"
+  tags:
+    - install php
+
+- name: Install additional php package
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - "{{ php_version }}-mbstring.x86_64"
+    #- "{{ php_version }}-xml.x86_64"
+    #- "{{ php_version }}-pecl-mongodb.x86_64"
+    #- "{{ php_version }}-gd.x86_64"
+    #- "{{ php_version }}-bcmath.x86_64"
+    - "{{ php_version }}-mysql.x86_64"
+    - "{{ php_version }}-xmlrpc.x86_64"
+
+- name: Install extra modules
+  yum:
+    name: "{{ php_version }}-{{ item }}"
+    state: latest
+  with_items:
+    - "{{ extra_module }}"
+  when:
+    - extra_module is defined
+
+- name: Enable php-fpm
+  systemd:
+    name: php-fpm
+    state: started
+    enabled: yes
+  tags: 
+    - enable-php-fpm
+
+- name: Copy php config
+  copy:
+    src: files/php.ini
+    dest: /etc/php.ini
+  tags:
+    - copy-php-config
+
+- name: Copy php-fpm config
+  copy:
+    src: files/www.conf
+    dest: /etc/php-fpm.d/www.conf
+  tags:
+    - copy-php-fpm-config
+
+- name: Restart php-fpm
+  systemd:
+    name: php-fpm
+    state: restarted
+  tags:
+    - restart-php-fpm

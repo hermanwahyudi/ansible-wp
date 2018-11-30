@@ -1,0 +1,4 @@
+---
+# vars file for nginx
+
+server_name: localhost

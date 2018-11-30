@@ -1,0 +1,4 @@
+---
+# vars file for php
+
+ php_version: php56w

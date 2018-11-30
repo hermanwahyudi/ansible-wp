@@ -1,0 +1,11 @@
+---
+  - hosts : "{{ host | default('localhost') }}"
+    become: yes
+    become_user: root
+    gather_facts: True
+    roles:
+    - php-fpm
+    - mysql
+    - wordpress
+    - nginx
+    
